@@ -10,7 +10,7 @@
 <?rfc inline="yes"?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-gredler-rtgwg-igp-label-advertisement-00" ipr="trust200902">
+<rfc category="std" docName="draft-gredler-rtgwg-igp-label-advertisement-01" ipr="trust200902">
 
   <!-- ***** FRONT MATTER ***** -->
 
@@ -85,7 +85,14 @@
       having allocated the label. Bringing up an explicit session using
       existing label distribution protocols between the non-adjacent label
       allocator and the label consumer is the existing remedy for this
-      dilemma.  </t>
+      dilemma.</t>
+
+      <t>For LDP protection routing<xref
+      target="NNHOP">LDP next next hop
+      labels</xref> have been proposed to provide the 2 hop neighborhood
+      labels. While the 2 hop neighborhood provides good backup coverage for
+      the typical network operator topology it is inadequate for some sparse
+      for example ring like topologies.</t>
 
       <t> Depending on the application, retrieval and setup of
       forwarding state of such >1 hop label allocations may only be
@@ -147,28 +154,35 @@
 	  ]]></artwork>
 	</figure>
 
-	<t>The protection router (PLR) evaluates if {E -> H -> D} is a
-	viable backup path.  Because the metric M4 {H -> MD} is higher than
-	the sum of the original primary path and the backup path, this
-	particular path would result in a loop and therefore is rejected.
-	</t>
+	<t>The protection router (PLR) evaluates for a primary path to
+	destination 'D' if {E -> H -> D} is a viable backup path.  Because the
+	metric M4 {H -> D} is higher than the sum of the original primary path
+	and the path from router 'H' to the PLR, this particular path would
+	result in a loop and therefore is rejected.</t>
 
 	<t><xref target="I-D.ietf-rtgwg-remote-lfa">Remote LFA</xref> has
-	introduced the notion of "remote" LFA neighbor. Router 'H' is the
-	remote LFA neighbor where backup traffic can get tunneled to.
+	introduced the notion of "remote" LFA neighbor. A helper Router
+	which is both in P and Q space could forward the traffic to the
+	final destination. Router 'H' is in P space, however due to
+	the actual metric allocation router 'H' is not in Q space.
 	</t>
 	
-	<t> Now consider that the remote LFA neighbor would advertise
-	a label for FEC 'D", which has the semantics that H will POP the label
-	and forward to the destination node 'D'. This is done irrespective of
-	the underlying IGP metric 'M4' it is a 'strict forwarding' label.  The
-	PLR router can now construct a label stack where the outermost label
+	<t> Now consider that router 'H' would advertise a label for
+	FEC 'D', which has the semantics that H will POP the label and forward
+	to the destination node 'D'. This is done irrespective of the
+	underlying IGP metric 'M4' it is a 'strict forwarding' label.  The PLR
+	router can now construct a label stack where the outermost label
 	provides transport to router 'H'. The next label on the MPLS stack is
 	the IGP learned 'strict forwarding label' label. Note that the label
 	'strict forwarding' semantics are similar to a 1-hop ERO (Explicit
-	route object).  The PLR router can now program a backup path
-	irrespective of the undesirable underlying layer-3 topology.
-	</t>
+	route object). The Remote 'LFA' calculation would ned to get changed,
+	such that even if a node is not in PQ space, but rather in P space, it
+	may get used as a backup neighbor if it advertises a strict forwarding
+	label to the final destination. A recursive version of the algorithm
+	is applicable as well as long a node in P space has some non looping
+	LSP path to the final destination. The PLR router can now program a
+	backup path irrespective of the undesirable underlying layer-3
+	topology.</t>
       </section>
 
       <section title="Egress ASBR Link Selection">
@@ -244,7 +258,7 @@
 	target="ero-label-stacking">a classical traffic engineering
 	problem</xref> is illustrated. The best IGP path between {S,D} is {S,
 	R3, R4, D}.  Unfortunately this path is congested. It turns out that
-	the links {R1, R4} and {R2, R4} do have some spare capacity. In the
+	the links {S, R1}, {R1, R4} and {R2, R4} do have some spare capacity. In the
 	past a C-SPF calculation would have passed the ERO {S, R1, R4, R2, D}
 	down to RSVP for signaling. The conceptional problem with RSVP
 	signaled paths is that they cannot by shared with other nodes in the
@@ -285,12 +299,11 @@
 	  </list>
 	</t>
 
-	<t>
-	Note that not every hop in the ERO needs to be unique label in
-	the label stack.  This is undesired as existing forwarding technology
-	has got upper limits how much labels can get pushed on the label
-	stack. In fact an existing tunnel (LDP tunnel {S, R1, R2} an be
-	reused.for certain path segments.  </t>
+	<t>Note that not every hop in the ERO needs to be unique label
+	in the label stack.  This is undesired as existing forwarding hardware
+	technology has got upper limits how much labels can get pushed on the
+	label stack. In fact an existing tunnel (for example LDP tunnel {S,
+	R1, R2} can be reused for certain path segments.</t>
       </section>
 
       <section title="Stitching MPLS Label Switched Path Segments">
@@ -301,11 +314,12 @@
 	  and shared by many ingress routers in the network. In the <xref
 	  target="advertising-path-segments">example network</xref> a LSP with an
 	  ERO of {R4, R2, R6} has been established in order to utilize two
-	  unused north / south links. The only way to attract traffic to that ERO
+	  unused north / south links. The only way to attract traffic to that LSP
 	  is to advertise the LSP as a forwarding adjacency. This causes loss of
 	  the original path information which might be interesting for a potential router
-	  which might wants to use this LSP for backup purposes and have all fate-sharing
-	  and bandwidth utilization figures.
+	  which might wants to use this LSP for backup purposes. A computing router
+	  would need to have all underlying fate-sharing and bandwidth utilization
+	  information.
 	</t>
 
 	<figure anchor="advertising-path-segments" title="Advertising path segments">
@@ -331,14 +345,19 @@
 	<t>
 	  The IGP on R4 can now advertise the LSP segment by advertising its ingress label
 	  and optionally pass the original ERO, such that any upstream router can do
-	  their fate-sharing computations.
+	  their fate-sharing computations. Potential ingress routers now can use
+	  this LSP as a segment of the overall LSP. Furthermore ingress routers can
+	  combine label advertisements from different routers along the path.
+	  For example router S could stacks its LDP path to R2 {S, R1, R2} plus
+	  the IGP learned RSVP LSP {R4, R5, R6} plus a strict forwarding label {R6, D}.
 	</t>
       </section>
 
     </section> <!-- Use case section end -->
 
     <section anchor="Acknowledgements" title="Acknowledgements">
-      <t>Thanks to Yakov Rehkter for his useful comments.</t>
+      <t>Many thanks to Yakov Rehkter, Stephane Likowski and Bruno
+      Decraene for their useful comments.</t>
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
@@ -369,5 +388,25 @@
     <references title="Informative References">
       <?rfc include="http://xml.resource.org/public/rfc/bibxml3/reference.I-D.draft-ietf-rtgwg-remote-lfa-01.xml"?>
     </references>
+
+    <references>
+    <reference anchor="NNHOP"
+	       target="http://tools.ietf.org/html/draft-shen-mpls-ldp-nnhop-label-02">
+      <front>
+	<title>Discovering LDP Next-Nexthop Labels</title>
+	<author fullname="Enke" initials="H." surname="Chen">
+	  <organization>Cisco Systems, Inc.</organization>
+	</author>
+	<author fullname="Naiming" initials="H." surname="Shen">
+	  <organization>Cisco Systems, Inc.</organization>
+	</author>
+	<author fullname="Albert" initials="H." surname="Tian">
+	  <organization>Redback Networks</organization>
+	</author>
+	<date month = "November" year="2005" />
+      </front>
+    </reference>
+    </references>
+
   </back>
 </rfc>
