@@ -10,7 +10,7 @@
 <?rfc inline="yes"?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-gredler-rtgwg-igp-label-advertisement-01" ipr="trust200902">
+<rfc category="std" docName="draft-gredler-rtgwg-igp-label-advertisement-02" ipr="trust200902">
 
   <!-- ***** FRONT MATTER ***** -->
 
@@ -35,7 +35,7 @@
 
     <!-- Another author who claims to be an editor -->
 
-    <date day="18" month="February" year="2013"/>
+    <date day="20" month="February" year="2013"/>
 
     <area>Routing</area>
 
@@ -59,7 +59,7 @@
 
       <t>Application of this technique are found in the field of
       backup (LFA) computation, Label switched path stitching,
-      traffic engineering and egress link load balancing.</t>
+      traffic engineering and egress ASBR link selection.</t>
     </abstract>
 
     <note title="Requirements Language">
@@ -87,7 +87,7 @@
       allocator and the label consumer is the existing remedy for this
       dilemma.</t>
 
-      <t>For LDP protection routing<xref
+      <t>For LDP protection routing <xref
       target="NNHOP">LDP next next hop
       labels</xref> have been proposed to provide the 2 hop neighborhood
       labels. While the 2 hop neighborhood provides good backup coverage for
@@ -134,6 +134,13 @@
 	target="coverage-gap-analysis">ring shaped topologies</xref>.
 	</t>
 
+	<t><xref target="I-D.ietf-rtgwg-remote-lfa">Remote LFA</xref> has
+	introduced the notion of a "remote" LFA neighbor. This helper router
+	which is both in P and Q space could forward the traffic to the
+	final destination. Router 'H' is in P space, however due to
+	the actual metric allocation router 'H' is not in Q space.
+	</t>
+	
 	<figure anchor="coverage-gap-analysis" title="Coverage gap analysis">
 	  <artwork><![CDATA[
               +-----+
@@ -160,13 +167,6 @@
 	and the path from router 'H' to the PLR, this particular path would
 	result in a loop and therefore is rejected.</t>
 
-	<t><xref target="I-D.ietf-rtgwg-remote-lfa">Remote LFA</xref> has
-	introduced the notion of "remote" LFA neighbor. A helper Router
-	which is both in P and Q space could forward the traffic to the
-	final destination. Router 'H' is in P space, however due to
-	the actual metric allocation router 'H' is not in Q space.
-	</t>
-	
 	<t> Now consider that router 'H' would advertise a label for
 	FEC 'D', which has the semantics that H will POP the label and forward
 	to the destination node 'D'. This is done irrespective of the
@@ -183,23 +183,33 @@
 	LSP path to the final destination. The PLR router can now program a
 	backup path irrespective of the undesirable underlying layer-3
 	topology.</t>
+
+	<t>Using exisiting tunnels for backup routing has been
+	previously described in <xref
+	target="I-D.bryant-ipfrr-tunnels"></xref>. Section 5.2.3 'Directed
+	forwarding' describes an option to insert a single MPLS label between
+	the tunnel and the payload. Traffic may thereby be directed to a particular
+	neighbor. The mechanism described in this document, is an MPLS specific
+	manifestation of 'Directed forwarding'. 
+	</t>
+
       </section>
 
       <section title="Egress ASBR Link Selection">
-	<t>In the ingress router 'S' is facing a <xref
-	target="egress-asbr-link-selection">dilemma</xref>. Router S receives
-	a BGP route from all of its 4 upstream routers. Using existing
-	mechanism the provider owning AS1 can control the loading of its
-	direct links *to* its ASBR3 and ASBR4, however it cannot control the
-	load of the links beyond the ASBRs, except manually tweaking the
-	BGP import policy and filtering out a certain prefix. It would be
-	be more desirable to have visibility of all four BGP paths and be able
-	to control the loading of those four paths using Weighted ECMP.
-	Note that the computation of the 'Weight' percentage and the
-	component doing this computation (Network embedded/SDN) is outside
-	the scope of this document.</t>
+	<t>In the topology described in <xref
+	target="egress-asbr-link-selection"></xref>.  router 'S' is facing a
+	dilemma. Router S receives a BGP route from all of its 4 upstream
+	routers. Using existing mechanism the provider owning AS1 can control
+	the loading of its direct links *to* its ASBR1 and ASBR2, however it
+	cannot control the load of the links beyond the ASBRs, except manually
+	tweaking the eBGP import policy and filtering out a certain prefix. It
+	would be be more desirable to have visibility of all four BGP paths
+	and be able to control the loading of those four paths using Weighted
+	ECMP.  Note that the computation of the 'Weight' percentage and the
+	component doing this computation (Router embedded or SDN) is outside the
+	scope of this document.</t>
 
-	<t>If all the ASes would be under one common administrative
+      <t>If all the ASes would be under one common administrative
 	control then the network operator could deploy a forwarding hierarchy
 	by using <xref target="RFC3107"/> to learn about the remote-AS BGP
 	nexthop addresses and associated labels. An ingress router 'S' would
@@ -209,7 +219,7 @@
 	load on the WAN links for the ingress AS.</t>
 
 	<t>A 'strict forwarding' paradigm would solve this problem: An
-	Egress ASBR (e.g. ASBR 3 and 4) allocates a strict forwarding label
+	Egress ASBR (e.g. ASBR 1 and 2) allocates a strict forwarding label
 	toward all of its peering ASes and advertises it into its local
 	IGP. The forwarding state of all those labels is to POP off the label
 	and forward to the respective interface. The ingress router 'S' then
@@ -356,7 +366,7 @@
     </section> <!-- Use case section end -->
 
     <section anchor="Acknowledgements" title="Acknowledgements">
-      <t>Many thanks to Yakov Rehkter, Stephane Likowski and Bruno
+      <t>Many thanks to Yakov Rehkter, Ina Minei, Stephane Likowski and Bruno
       Decraene for their useful comments.</t>
     </section>
 
@@ -387,6 +397,7 @@
 
     <references title="Informative References">
       <?rfc include="http://xml.resource.org/public/rfc/bibxml3/reference.I-D.draft-ietf-rtgwg-remote-lfa-01.xml"?>
+      <?rfc include="http://xml.resource.org/public/rfc/bibxml3/reference.I-D.draft-bryant-ipfrr-tunnels-03.xml"?>
     </references>
 
     <references>
@@ -394,13 +405,13 @@
 	       target="http://tools.ietf.org/html/draft-shen-mpls-ldp-nnhop-label-02">
       <front>
 	<title>Discovering LDP Next-Nexthop Labels</title>
-	<author fullname="Enke" initials="H." surname="Chen">
+	<author fullname="Enke" initials="E." surname="Chen">
 	  <organization>Cisco Systems, Inc.</organization>
 	</author>
-	<author fullname="Naiming" initials="H." surname="Shen">
+	<author fullname="Naiming" initials="N." surname="Shen">
 	  <organization>Cisco Systems, Inc.</organization>
 	</author>
-	<author fullname="Albert" initials="H." surname="Tian">
+	<author fullname="Albert" initials="A." surname="Tian">
 	  <organization>Redback Networks</organization>
 	</author>
 	<date month = "November" year="2005" />
