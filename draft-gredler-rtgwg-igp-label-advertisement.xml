@@ -10,7 +10,7 @@
 <?rfc inline="yes"?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-gredler-rtgwg-igp-label-advertisement-02" ipr="trust200902">
+<rfc category="std" docName="draft-gredler-rtgwg-igp-label-advertisement-03" ipr="trust200902">
 
   <!-- ***** FRONT MATTER ***** -->
 
@@ -35,7 +35,7 @@
 
     <!-- Another author who claims to be an editor -->
 
-    <date day="20" month="February" year="2013"/>
+    <date day="3" month="April" year="2013"/>
 
     <area>Routing</area>
 
@@ -59,7 +59,7 @@
 
       <t>Application of this technique are found in the field of
       backup (LFA) computation, Label switched path stitching,
-      traffic engineering and egress ASBR link selection.</t>
+      egress protection, traffic engineering and egress ASBR link selection.</t>
     </abstract>
 
     <note title="Requirements Language">
@@ -114,14 +114,23 @@
       that label for the tracking routes of destinations beyond a remote
       LFA neighbor.</t>
 
-      <t>Since the IGP now creates forwarding state based on label
-      information it may make sense to distribute label by the IGP as
-      well. This section lists example applications of IGP distribution of
-      MPLS labels.</t>
+      <t>Since the IGP is now aware of label switched paths
+      and it does create forwarding state based on label information it
+      makes sense to distribute label switched paths by the IGP as
+      well.
+      </t>
+    </section>
 
-      <section title="Explicit One hop tunnels">
+    <section title="Use cases for IGP label distribution">
+
+      <t>
+	This section lists example usecase which mandate IGP
+	distribution of MPLS label switched paths.
+      </t>
+
+      <section title="Increase LFA backup coverage using 'Directed Forwarding'">
 	<t>Deployment of Loop free alternate backup technology <xref
-	target="RFC5286">RFC 5286</xref> results in backup graphs whose
+	target="RFC5286"/> results in backup graphs whose
 	coverage is highly dependent on the underlying Layer-3 topology.
 	Typical network deployments provide backup coverage less than 100
 	percent (see <xref target="RFC6571">RFC 6571 Section 4.3 for
@@ -261,6 +270,12 @@
 
       </section>
 
+      <section title="Tail end protection of BGP service routes">
+	<t>
+	  FIXME
+	</t>
+      </section>
+
       <section title="Explicit Path Routing through Label Stacking">
 
 	<t>IGP advertised strict forwarding labels can be utilized for
@@ -398,9 +413,7 @@
     <references title="Informative References">
       <?rfc include="http://xml.resource.org/public/rfc/bibxml3/reference.I-D.draft-ietf-rtgwg-remote-lfa-01.xml"?>
       <?rfc include="http://xml.resource.org/public/rfc/bibxml3/reference.I-D.draft-bryant-ipfrr-tunnels-03.xml"?>
-    </references>
 
-    <references>
     <reference anchor="NNHOP"
 	       target="http://tools.ietf.org/html/draft-shen-mpls-ldp-nnhop-label-02">
       <front>
@@ -417,7 +430,7 @@
 	<date month = "November" year="2005" />
       </front>
     </reference>
-    </references>
 
+    </references>
   </back>
 </rfc>
