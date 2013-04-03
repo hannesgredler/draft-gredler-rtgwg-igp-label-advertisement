@@ -124,7 +124,7 @@
     <section title="Use cases for IGP label distribution">
 
       <t>
-	This section lists example usecase which mandate IGP
+	This section lists example use cases which illustrate IGP
 	distribution of MPLS label switched paths.
       </t>
 
@@ -193,7 +193,9 @@
 	backup path irrespective of the undesirable underlying layer-3
 	topology.</t>
 
-	<t>Using exisiting tunnels for backup routing has been
+	<!-- FIXME add link to bridge disjoint P and Q node -->
+
+	<t>Using existing tunnels for backup routing has been
 	previously described in <xref
 	target="I-D.bryant-ipfrr-tunnels"></xref>. Section 5.2.3 'Directed
 	forwarding' describes an option to insert a single MPLS label between
@@ -272,8 +274,54 @@
 
       <section title="Tail end protection of BGP service routes">
 	<t>
-	  FIXME
+	  <xref target="I-D.minto-2547-egress-node-fast-protection"/> describes
+	  how PE routers advertising their labeled routes could get protected from
+	  node-failures. This is a local repair technology being dependent upon successful
+	  construction of a LFA path from any PLR to the 'protector PE' in a network.
 	</t>
+
+	<figure anchor="ctx-advertisment" title="Backup Context advertisement">
+	  <artwork><![CDATA[
+
+                               >>>>>>>>CTX-label>>>>>>
+                              //                     \\ 
+                             //                       \\
++------+   +------+   +------+   +------+   +------+   +------+
+| CE1  +---+PEingr+---+PEprot+---+  P   +---+ PLR  +-X-+PEegr +
++------+   +------+   +------+   +------+   +------+   +------+
+              \\              \                       /  //
+                >>>>>>>>>>>>>>>>>>>>>>primary-LSP>>>>>>>>
+                                \                   /
+                                 \    +------+     /
+                                  \___+  CE2 +____/
+                                      +------+
+
+	  ]]></artwork>
+	</figure>
+
+	<t>
+	  Assume a primary LDP LSP from the 'ingress PE' router to the
+	  'egress PE' router.  Now consider the FRR calculation from the 'PLR'
+	  router if its direct link to the 'egress PE' router fails (X) or the
+	  entire 'egress PE' goes down. The 'PLR' would cannot find a LFA path
+	  to local-repair the traffic to the 'protector PE'.  This is because
+	  the 'protector PE' router has not yet converged, and hence would want
+	  to forward the traffic to the original PE egress router, such that a
+	  temporal forwarding loop would be established.
+	</t>
+
+	<t>
+	  Using IGP advertisement of MPLS Labels the 'protector PE'
+	  router can advertise a Label which identifies backup traffic such that
+	  arriving traffic, can be forwarded using a context specific
+	  forwarding table, rather than the main LSP transit table. The
+	  advertised context label is a unidirectional pointer to the 'egress
+	  PE' router. The LFA calculation of the PLR gets augmented such that
+	  it considers advertised labels pointing to the original tail-end
+	  of the LSP. The network learns thereby an egress LSP point
+	  which is is as good as the original egress LSP point.
+	</t>
+
       </section>
 
       <section title="Explicit Path Routing through Label Stacking">
@@ -413,24 +461,25 @@
     <references title="Informative References">
       <?rfc include="http://xml.resource.org/public/rfc/bibxml3/reference.I-D.draft-ietf-rtgwg-remote-lfa-01.xml"?>
       <?rfc include="http://xml.resource.org/public/rfc/bibxml3/reference.I-D.draft-bryant-ipfrr-tunnels-03.xml"?>
+      <?rfc include="http://xml.resource.org/public/rfc/bibxml3/reference.I-D.draft-minto-2547-egress-node-fast-protection-01.xml"?>
 
-    <reference anchor="NNHOP"
-	       target="http://tools.ietf.org/html/draft-shen-mpls-ldp-nnhop-label-02">
-      <front>
-	<title>Discovering LDP Next-Nexthop Labels</title>
-	<author fullname="Enke" initials="E." surname="Chen">
-	  <organization>Cisco Systems, Inc.</organization>
-	</author>
-	<author fullname="Naiming" initials="N." surname="Shen">
-	  <organization>Cisco Systems, Inc.</organization>
-	</author>
-	<author fullname="Albert" initials="A." surname="Tian">
-	  <organization>Redback Networks</organization>
-	</author>
-	<date month = "November" year="2005" />
-      </front>
-    </reference>
-
+      <!-- expired drafts -->
+      <reference anchor="NNHOP" target="http://tools.ietf.org/html/draft-shen-mpls-ldp-nnhop-label-02">
+	<front>
+	  <title>Discovering LDP Next-Nexthop Labels</title>
+	  <author fullname="Enke" initials="E." surname="Chen">
+	    <organization>Cisco Systems, Inc.</organization>
+	  </author>
+	  <author fullname="Naiming" initials="N." surname="Shen">
+	    <organization>Cisco Systems, Inc.</organization>
+	  </author>
+	  <author fullname="Albert" initials="A." surname="Tian">
+	    <organization>Redback Networks</organization>
+	  </author>
+	  <date month = "November" year="2005" />
+	</front>
+      </reference>
     </references>
+
   </back>
 </rfc>
