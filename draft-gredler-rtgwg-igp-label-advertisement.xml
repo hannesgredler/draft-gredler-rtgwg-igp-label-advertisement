@@ -33,9 +33,21 @@
       </address>
     </author>
 
-    <!-- Another author who claims to be an editor -->
+    <author fullname="Shane Amante" initials="S." surname="Amante">
+      <organization>Level 3 Communications, Inc.</organization>
+      <address>
+	<postal>
+	  <street>1025 Eldorado Blvd</street>
+	  <city>Broomfield</city>
+	  <region>CO</region>
+	  <code>80021</code>
+	  <country>US</country>
+	</postal>
+	<email>shane@level3.net</email>
+      </address>
+    </author>
 
-    <date day="3" month="April" year="2013"/>
+    <date day="4" month="April" year="2013"/>
 
     <area>Routing</area>
 
@@ -235,7 +247,7 @@
 	IGP. The forwarding state of all those labels is to POP off the label
 	and forward to the respective interface. The ingress router 'S' then
 	builds a MPLS label stack by combining its local transport label to
-	ASBR3 or ASBR4 with the IGP learned label pointing to the remote-AS
+	ASBR1 or ASBR2 with the IGP learned label pointing to the remote-AS
 	ASBR.</t>
 
 	<figure anchor="egress-asbr-link-selection" title="Egress ASBR Link selection">
@@ -269,6 +281,13 @@
                          :
 	  ]]></artwork>
 	</figure>
+
+      <t>
+	ASBR {1,2} may want to periodically check the liveliness state to
+	the endpoint of the label (ASBR {3,4,5,6}) which they are advertising.
+	<xref target="RFC5880">BFD Echo mode</xref> is suitable technology to ensure
+	liveliness state of undirectional links.
+      </t>
 
       </section>
 
@@ -455,6 +474,7 @@
       <?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.5036.xml"?>
       <?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.5151.xml"?>
       <?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.5286.xml"?>
+      <?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.5880.xml"?>
       <?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.6571.xml"?>
     </references>
 
