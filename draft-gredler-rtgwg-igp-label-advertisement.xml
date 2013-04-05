@@ -19,7 +19,7 @@
 
     <!-- add 'role="editor"' below for the editors if appropriate -->
 
-    <author fullname="Hannes Gredler" initials="H." surname="Gredler">
+    <author fullname="Hannes Gredler" initials="H." surname="Gredler" role="editor">
       <organization>Juniper Networks, Inc.</organization>
       <address>
 	<postal>
@@ -47,7 +47,35 @@
       </address>
     </author>
 
-    <date day="4" month="April" year="2013"/>
+    <author fullname="Tom Scholl" initials="T." surname="Scholl">
+      <organization>Amazon</organization>
+      <address>
+	<postal>
+	  <street></street>
+	  <city>Seattle</city>
+	  <region>WN</region>
+	  <code></code>
+	  <country>US</country>
+	</postal>
+	<email>tscholl@amazon.com</email>
+      </address>
+    </author>
+
+    <author fullname="Luay Jalil" initials="L." surname="Jalil">
+      <organization>Verizon</organization>
+      <address>
+	<postal>
+	  <street></street>
+	  <city>Dallas</city>
+	  <region>TX</region>
+	  <code></code>
+	  <country>US</country>
+	</postal>
+	<email>luay.jalil@verizon.com</email>
+      </address>
+    </author>
+
+    <date day="5" month="April" year="2013"/>
 
     <area>Routing</area>
 
@@ -64,7 +92,7 @@
       established session with that node.</t>
 
       <t>This document describes a mechanism to distribute FEC/label
-      mappings trough flooding protocols. Flooding protocols publish their
+      mappings through flooding protocols. Flooding protocols publish their
       objects for an unknown set of receivers, therefore one can efficiently
       scale label distribution for use cases where the receiver of label
       information is not directly connected.</t>
@@ -196,7 +224,7 @@
 	provides transport to router 'H'. The next label on the MPLS stack is
 	the IGP learned 'strict forwarding label' label. Note that the label
 	'strict forwarding' semantics are similar to a 1-hop ERO (Explicit
-	route object). The Remote 'LFA' calculation would ned to get changed,
+	route object). The Remote 'LFA' calculation would need to get changed,
 	such that even if a node is not in PQ space, but rather in P space, it
 	may get used as a backup neighbor if it advertises a strict forwarding
 	label to the final destination. A recursive version of the algorithm
@@ -226,7 +254,7 @@
 	the loading of its direct links *to* its ASBR1 and ASBR2, however it
 	cannot control the load of the links beyond the ASBRs, except manually
 	tweaking the eBGP import policy and filtering out a certain prefix. It
-	would be be more desirable to have visibility of all four BGP paths
+	would be more desirable to have visibility of all four BGP paths
 	and be able to control the loading of those four paths using Weighted
 	ECMP.  Note that the computation of the 'Weight' percentage and the
 	component doing this computation (Router embedded or SDN) is outside the
@@ -299,7 +327,7 @@
 	  construction of a LFA path from any PLR to the 'protector PE' in a network.
 	</t>
 
-	<figure anchor="ctx-advertisment" title="Backup Context advertisement">
+	<figure anchor="ctx-advertisement" title="Backup Context advertisement">
 	  <artwork><![CDATA[
 
                                >>>>>>>>CTX-label>>>>>>
@@ -322,7 +350,7 @@
 	  Assume a primary LDP LSP from the 'ingress PE' router to the
 	  'egress PE' router.  Now consider the FRR calculation from the 'PLR'
 	  router if its direct link to the 'egress PE' router fails (X) or the
-	  entire 'egress PE' goes down. The 'PLR' would cannot find a LFA path
+	  entire 'egress PE' goes down. The 'PLR' cannot find a LFA path
 	  to local-repair the traffic to the 'protector PE'.  This is because
 	  the 'protector PE' router has not yet converged, and hence would want
 	  to forward the traffic to the original PE egress router, such that a
