@@ -168,7 +168,7 @@
 	distribution of MPLS label switched paths.
       </t>
 
-      <section title="Increase LFA backup coverage using 'Directed Forwarding'">
+      <section title="Increase LFA backup coverage using 'Directed Forwarding'" anchor="directed_forwarding">
 	<t>Deployment of Loop free alternate backup technology <xref
 	target="RFC5286"/> results in backup graphs whose
 	coverage is highly dependent on the underlying Layer-3 topology.
@@ -425,6 +425,80 @@
 	label stack. In fact an existing tunnel (for example LDP tunnel {S,
 	R1, R2} can be reused for certain path segments.</t>
       </section>
+      
+      <section title="Link and Node Protection LSPs">
+          
+    <t>In a network that is utilizing IGP advertised labels, it is still
+    critical to perform fast restoration, with packet forwarding restoration
+    times that are comparable or better than those of RSVP Fast Re-Route (FRR)
+    <xref target="RFC4090"/>. In <xref target="bypass-label-stacking">a classic
+    link failure scenario</xref> is illustrated. The best IGP path between
+    {S,D} is {S, R3, R4, D}. When the directly adjacent link between R3 to R4
+    experiences a failure, (e.g.: fiber cut), the length of time to restore
+    packet forwarding, from S to D, is dependent on several factors:
+    propagation delay during forwarding of new Link State PDU's; artificial
+    delays that may be introduced during the flooding of Link State PDU's
+    (i.e.: LSP/LSA generation intervals, LSA/LSP transmit and retransmit
+    pacing); artificial delays that may be introduced during CSPF computations
+    (i.e.: SPF throttling) and, finally, time necessary to program new label
+    forwarding entries in hardware. The overall length of IGP convergence time,
+    in particular due to artificial delays introduced by various IGP timers
+    that could have been manipulated by operators, will be substantially worse
+    than those observed in networks who have deployed RSVP Fast Re-Route for
+    Link and/or Node Protection.</t>
+    
+    <t>In those networks that use RSVP FRR, there are pre-established Bypass
+    LSP's to immediately restore packet forwarding on an alternate path, until
+    a later time when a head-end LSR is able to signal a new LSP that is routed
+    around the failure. In the below example, an RSVP FRR Bypass LSP may be
+    pre-established along {R3, R1, R2, R4} to provide Link Protection of the R3
+    to R4 link. When that link fails, R3 will immediately start forwarding
+    traffic along the {R3, R1, R2, R4} Bypass LSP while simultaneously
+    signaling in the Control Plane to the Head-End LSR, S, that the R3 to R4
+    link has failed. This allows time for S to run CSPF to calculate a new,
+    optimal forwarding path around the link failure; signal a new LSP through
+    intermediate LSRs; and, finally, S may perform "make-before-break" to start
+    forwarding traffic on the new LSP.</t>
+    
+	<figure anchor="bypass-label-stacking" title="Protection LSPs using Label stacking">
+	  <artwork><![CDATA[
+              +----+         +----+
+              | R1 +---------+ R2 |
+              +----+    2    +----+
+             /   |              |  \
+            / 2  |              |   \ 2
+           /     |              |    \
+    +-----+      |              |     +-----+
+    |  S  |      | 4            | 5   |  D  |
+    +-----+      |              |     +-----+
+           \     |              |    /
+            \ 1  |              |   / 1
+             \   |              |  /
+              +----+         +----+
+              | R3 +---------+ R4 |
+              +----+    1    +----+
+	  ]]></artwork>
+	</figure>
+
+    <t>A method is required achieve fast restoration, immediately after a node
+    or link failure, in a network utilizing IGP labels. One method to achieve
+    this goal is discussed in <xref target="directed_forwarding" />, Increase
+    LFA backup coverage using 'Directed Forwarding'. In this case, R2 would
+    need to advertise a FEC for D with a Directed Forwarding label, 200, for
+    its output interface to D. In addition, R1 would also need to advertise a
+    Directed Forwarding Label, 100, to R2 out its directly attached interface:
+    R1 to R2. At this point, R3 would compute a secondary path to D perhaps
+    using the path {R3, R1, R2, D}. R3 could then pre-program its LFIB with a
+    primary LSP from R3 to R4 and simultaneously pre-program its LFIB with a
+    secondary, fast-restoration path {R3, R1, R2, D}. In this scenario, when a
+    link failure of R3 to R4 occurs, R3 would perform the appropriate label
+    operations to restore packet forwarding along the alternate path: {R3, R1,
+    R2, D}. Specifically, R3 would swap 1 label, (the received label from
+    S would be swapped with 200), push one label, (the DF label advertised
+    by R1 to forward the packet out its directly connected link to R2).  This
+    would result in the following label stack as the packet is being
+    transmitted by R3 out to R1: {100, 200}.</t>
+      </section>
 
       <section title="Stitching MPLS Label Switched Path Segments">
 
@@ -507,6 +581,7 @@
     </references>
 
     <references title="Informative References">
+      <?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.4090.xml"?>
       <?rfc include="http://xml.resource.org/public/rfc/bibxml3/reference.I-D.draft-ietf-rtgwg-remote-lfa-01.xml"?>
       <?rfc include="http://xml.resource.org/public/rfc/bibxml3/reference.I-D.draft-bryant-ipfrr-tunnels-03.xml"?>
       <?rfc include="http://xml.resource.org/public/rfc/bibxml3/reference.I-D.draft-minto-2547-egress-node-fast-protection-01.xml"?>
