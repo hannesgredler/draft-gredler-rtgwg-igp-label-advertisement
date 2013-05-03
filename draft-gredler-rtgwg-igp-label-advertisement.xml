@@ -10,7 +10,8 @@
 <?rfc inline="yes"?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-gredler-rtgwg-igp-label-advertisement-03" ipr="trust200902">
+<rfc category="std" docName="draft-gredler-rtgwg-igp-label-advertisement-04"
+     ipr="trust200902">
 
   <!-- ***** FRONT MATTER ***** -->
 
@@ -75,7 +76,7 @@
       </address>
     </author>
 
-    <date day="5" month="April" year="2013"/>
+    <date day="3" month="May" year="2013"/>
 
     <area>Routing</area>
 
@@ -547,6 +548,64 @@
 	</t>
       </section>
 
+      <section title="T-LDP replacement for infrastructure labels">
+
+	<t>
+	  Consider <xref target="tldp-replacement"/>. There is a LSP
+	  {S, R1, R2, D} which seeks link-protection against failure
+	  of the {R1, R2} link using R-LFA.
+	</t>
+
+	<figure anchor="tldp-replacement"
+		title="Avoidance of T-LDP for obtaining infrastructure labels">
+	  <artwork><![CDATA[
+              +----+         +----+
+              | R1 +----X----+ R2 |
+              +----+    1    +----+
+             /   >>>>LSP-A->D>>>>  \
+            / 1 //               \\ \ 1
+           /   //                 \\ \
+    +-----+   //                   \> +-----+
+    |  S  |                           |  D  |
+    +-----+                           +-----+
+           \                         /
+            \ 2                     / 4
+             \                     /
+              +----+         +----+
+              | R3 +---------+ R4 |
+              +----+    3    +----+
+	  ]]></artwork>
+	</figure>
+
+	<t>
+	  The Remote LFA Calculations results in the following
+	  Node sets.
+	</t>
+
+	<t>	
+	  <list style="symbols">
+	  <t>Extended P set: {R4}</t>
+	  <t>Q set: {R2, D, R4}</t>
+	  <t> PQ set: {R4}</t>
+	  </list>
+	</t>
+
+	<t>
+	  The PLR router (R1) needs to obtain the label-bindings from
+	  R4 towards the final destination D in order to push the two LSPs
+	  {R1, S, R3, R4} and {R4, D}. State of the art is to establish
+	  a targeted LDP session between PLR (R1) and the R-LFA
+	  Neighbor (R4). It would be desirable to avoid dynamic bringup
+	  of T-LDP sessions. Rather the IGP should supply the corresponding
+	  Label Bindings. Furthermore it would be desirable to apply some form
+	  of message compression, such that (unlike T-LDP) not per-FEC
+	  label bindings need to be exchanged. Applying Label Block style
+	  encoding <xref target="RFC4761"/> would be a suitable technology
+	  to compress the messaging overhead.
+	</t>
+
+      </section>
+
     </section> <!-- Use case section end -->
 
     <section anchor="Acknowledgements" title="Acknowledgements">
@@ -573,6 +632,7 @@
     <references title="Normative References">
       <?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml"?>
       <?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.3107.xml"?>
+      <?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.4761.xml"?>
       <?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.5036.xml"?>
       <?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.5151.xml"?>
       <?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.5286.xml"?>
