@@ -142,8 +142,8 @@
       is an operational burden and therefore should be avoided.</t>
 
       <t>The use cases described in this document are equally applicable to
-      IPv4 and IPv6 carried over MPLS. Furthermoe the proposed use of distributing
-      MPLS Labels using IGP prototocols adheres the architectural principles laid
+      IPv4 and IPv6 carried over MPLS. Furthermore the proposed use of distributing
+      MPLS Labels using IGP prototocols adheres to the architectural principles laid
       out in <xref target="RFC3031"/>.
       </t>
     </section>
@@ -388,14 +388,23 @@
 	R3, R4, D}.  Unfortunately this path is congested. It turns out that
 	the links {S, R1}, {R1, R4} and {R2, R4} do have some spare capacity. In the
 	past a C-SPF calculation would have passed the ERO {S, R1, R4, R2, D}
-	down to RSVP for signaling. One of the features that RSVP provides, 
-	is that it keeps track of all the reservations over a particular link,
-	enabling bandwidth reservations of all ingress/egress pairs in a network.
-	What is a feature for bandwidth reservations, may become a scaling harm,
-	as the RSVP signaled paths may not be shared with other nodes in the
-	network. This is a use case for constructing explicit routed paths, without the
-	need to neither track per LSP control-plane state for each link,
-	nor to program per LSP forwarding state.</t>
+	down to RSVP for signaling.
+	</t>
+	<t>One of the functions that RSVP-TE provides, is that it keeps
+	track of all the reservations over a particular link, enabling
+	support for such traffic engineering features as bandwidth
+	constraints, LSP priorities, and LSP preemption.  However,
+	support for these features with RSVP-TE has a cost associated
+	with it, as it does require a node to maintain control and
+	data plane state for all the individual point-to-point LSPs
+	traversing the node (modulo the LSPs that rely on the LSP
+	hierarchy).  This is a use case for constructing explicitly
+	routed paths, without the need to maintain per LSP control/data
+	plane state on the nodes traversed by the LSP. This use case
+	assumes that either support for bandwidth constrains, LSP
+	priorities, and LSP preemption is not needed, or that such
+	support is provided by means outside of this document.
+	</t>
 
 	<figure anchor="ero-label-stacking" title="Explicit Routing using Label stacking">
 	  <artwork><![CDATA[
