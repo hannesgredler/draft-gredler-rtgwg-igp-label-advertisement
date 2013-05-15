@@ -10,7 +10,7 @@
 <?rfc inline="yes"?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-gredler-rtgwg-igp-label-advertisement-04"
+<rfc category="std" docName="draft-gredler-rtgwg-igp-label-advertisement-05"
      ipr="trust200902">
 
   <!-- ***** FRONT MATTER ***** -->
@@ -76,7 +76,7 @@
       </address>
     </author>
 
-    <date day="5" month="May" year="2013"/>
+    <date day="15" month="May" year="2013"/>
 
     <area>Routing</area>
 
@@ -448,38 +448,63 @@
       
       <section title="Link and Node Protection LSPs">
           
-    <t>In a network that is utilizing IGP advertised labels, it is still
-    critical to perform fast restoration, with packet forwarding restoration
-    times that are comparable or better than those of RSVP Fast Re-Route (FRR)
-    <xref target="RFC4090"/>. In <xref target="bypass-label-stacking">a classic
-    link failure scenario</xref> is illustrated. The best IGP path between
-    {S,D} is {S, R3, R4, D}. When the directly adjacent link between R3 to R4
-    experiences a failure, (e.g.: fiber cut), the length of time to restore
-    packet forwarding, from S to D, is dependent on several factors:
-    propagation delay during forwarding of new Link State PDU's; artificial
-    delays that may be introduced during the flooding of Link State PDU's
-    (i.e.: LSP/LSA generation intervals, LSA/LSP transmit and retransmit
-    pacing); artificial delays that may be introduced during CSPF computations
-    (i.e.: SPF throttling) and, finally, time necessary to program new label
-    forwarding entries in hardware. The overall length of IGP convergence time,
-    in particular due to artificial delays introduced by various IGP timers
-    that could have been manipulated by operators, will be substantially worse
-    than those observed in networks who have deployed RSVP Fast Re-Route for
-    Link and/or Node Protection.</t>
-    
-    <t>In those networks that use RSVP FRR, there are pre-established Bypass
-    LSP's to immediately restore packet forwarding on an alternate path, until
-    a later time when a head-end LSR is able to signal a new LSP that is routed
-    around the failure. In the below example, an RSVP FRR Bypass LSP may be
-    pre-established along {R3, R1, R2, R4} to provide Link Protection of the R3
-    to R4 link. When that link fails, R3 will immediately start forwarding
-    traffic along the {R3, R1, R2, R4} Bypass LSP while simultaneously
-    signaling in the Control Plane to the Head-End LSR, S, that the R3 to R4
-    link has failed. This allows time for S to run CSPF to calculate a new,
-    optimal forwarding path around the link failure; signal a new LSP through
-    intermediate LSRs; and, finally, S may perform "make-before-break" to start
-    forwarding traffic on the new LSP.</t>
-    
+	<t>In a network that is protecting nodes and links using
+	IGP advertised labels, it is critical to perform
+	fast restoration using local-repair, with packet forwarding restoration
+	times comparable to
+	RSVP Fast Re-Route (FRR) <xref target="RFC4090"/> or
+	Loop Free Alternates <xref target="RFC5286"/>.
+	</t>
+
+	<t> First consider the timing of events assuming
+	control-plane convergence
+	as the sole repair mechanism.
+	In <xref target="bypass-label-stacking"/> a
+	link failure scenario is illustrated. The best IGP path between
+	{S,D} is {S, R3, R4, D}. When the directly adjacent link between R3 to R4
+	experiences a failure, (e.g.: fiber cut), the length of time to restore
+	packet forwarding, from S to D, is dependent on several factors:
+	</t>
+
+	<t>
+	  <list style="numbers">
+	    <t>artificial (generation and pacing) delay of link-state updates</t>
+	    <t>propagation delay of link-state updates</t>
+	    <t>SPF throttling</t>
+	    <t>programming forwarding state</t>
+	  </list>
+	</t>
+	
+	<t>The overall length of IGP convergence time, is largely dependent
+	on the slowest router programming changed forwarding state.
+	This is inherent unpredictable due to the CPU load
+	and overall scheduling state in the affected
+	systems, hence control-plane as the sole repair technology is ineffective.
+	In contrast, local-repair technology helps to minimize transient packet loss.
+	In local-repair technology a backup path is programmed ahead of time.
+	Once the link fails a forwarding plane may immediately change forwarding
+	state (= local-repair) to the backup path.
+	This keeps the traffic flowing until the
+	control-plane calculates and installs the new primary path and backup
+	path tuples forwarding state for a given destination in the network.
+	</t>
+	
+	<t>In the below example, the IGP calculates using C-SPF and pre-establishes
+	a FRR Bypass LSP along {R3, R1, R2, R4} to provide Link Protection of the R3
+	to R4 link. When that link fails, R3 will local-repair
+	traffic along the {R3, R1, R2, R4} Bypass LSP while simultaneously
+	signaling in the Control Plane to the Head-End LSR, S, that the R3 to R4
+	link has failed. This allows time for S to run C-SPF to calculate a new,
+	optimal forwarding path around the link failure; signal a new LSP through
+	intermediate LSRs; and, finally, S may perform "make-before-break" to start
+	forwarding traffic on the new LSP.</t>
+
+	<t>Note that the algorithmic complexity of a single-destination C-SPF is
+	much less compared to the the all-destination, per-neighbor forward SPF and
+	per-neighbor reverse SPF a router doing
+	<xref target="I-D.ietf-rtgwg-remote-lfa">Remote LFA</xref> calculations. 
+	</t>
+	
 	<figure anchor="bypass-label-stacking" title="Protection LSPs using Label stacking">
 	  <artwork><![CDATA[
               +----+         +----+
@@ -500,24 +525,49 @@
 	  ]]></artwork>
 	</figure>
 
-    <t>A method is required achieve fast restoration, immediately after a node
-    or link failure, in a network utilizing IGP labels. One method to achieve
-    this goal is discussed in <xref target="directed_forwarding" />, Increase
-    LFA backup coverage using 'Directed Forwarding'. In this case, R2 would
-    need to advertise a FEC for D with a Directed Forwarding label, 200, for
-    its output interface to D. In addition, R1 would also need to advertise a
-    Directed Forwarding Label, 100, to R2 out its directly attached interface:
-    R1 to R2. At this point, R3 would compute a secondary path to D perhaps
-    using the path {R3, R1, R2, D}. R3 could then pre-program its LFIB with a
-    primary LSP from R3 to R4 and simultaneously pre-program its LFIB with a
-    secondary, fast-restoration path {R3, R1, R2, D}. In this scenario, when a
-    link failure of R3 to R4 occurs, R3 would perform the appropriate label
-    operations to restore packet forwarding along the alternate path: {R3, R1,
-    R2, D}. Specifically, R3 would swap 1 label, (the received label from
-    S would be swapped with 200), push one label, (the DF label advertised
-    by R1 to forward the packet out its directly connected link to R2).  This
-    would result in the following label stack as the packet is being
-    transmitted by R3 out to R1: {100, 200}.</t>
+	<t>For construction of the Bypass LSP a constrained-SPF (C-SPF)
+	calculation is commenced. The C-SPF calculation computes
+	an alternative path to R4, without transiting the {R3, R4} link.
+	Furthermore the backup path MUST not violate any SRLGs with respect to
+	the {R3, R4} link. A possible backup path result is {R1, R1, R3, R4}.
+	</t>
+
+	<t>Next R3 needs to construct the label stack for this
+	particular Bypass LSP. Assume that each router along the Bypass LSP
+	has advertised a label binding for reaching its direct neighbor.
+	</t>
+
+	<t>
+	  <list style="symbols">
+	    <t>R1: to R2, Label 102</t>
+	    <t>R2: to R4, Label 204</t>
+	    <t>R3: to R1, Label 301</t>
+	  </list>
+	</t>
+	
+	<t>Now R3 can construct the the label-stack fully describing the bypass LSP:
+	For the last hop from R2 to R4, label 204 is pushed on the stack
+	For the penultimate hop from R1 to R2, label 102 is pushed on the stack
+	Since the first hop of the Bypass LSP is a local choice,
+	there is no need to encode an actual label (label 301),
+	but rather program a nexthop forwarding action to R1.
+	</t>
+
+	<t>RSVP headends learn about all their bypasses using RESV messages.
+	When stacking IGP advertised labels, there is no direct comparable
+	concept of a 'single head-end' node. All one-hop LSPs are in fact
+	head-end nodes of their own and since there is no end-to-end signaling
+	there is also no way about learning the bypasses that transit nodes
+	have set up. IGP advertised labels hence mandate that all
+	Bypass LSPs needs to be signaled to the rest of the network,
+	such that the edge routers can have full insight (and control) what links
+	may get utilized during local-repair. This is necessary, such
+	that an edge router who may wants to enforce path policy constraints
+	(e.g. end-to-end delay, hop count, path diversity, SRLG) can
+	prefer or avoid certain paths (and their Bypasses) for path
+	construction.
+	</t>
+
       </section>
 
       <section title="Stitching MPLS Label Switched Path Segments">
