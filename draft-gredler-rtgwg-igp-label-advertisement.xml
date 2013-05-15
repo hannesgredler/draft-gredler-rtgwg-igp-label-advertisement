@@ -529,7 +529,7 @@
 	calculation is commenced. The C-SPF calculation computes
 	an alternative path to R4, without transiting the {R3, R4} link.
 	Furthermore the backup path MUST not violate any SRLGs with respect to
-	the {R3, R4} link. A possible backup path result is {R1, R1, R3, R4}.
+	the {R3, R4} link. A possible backup path result for R3 is {R3, R1, R2, R4}.
 	</t>
 
 	<t>Next R3 needs to construct the label stack for this
